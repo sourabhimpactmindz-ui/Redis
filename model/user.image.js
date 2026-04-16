@@ -17,10 +17,10 @@ const UserSchema = mongoose.Schema({
         trim : true
     },
 
-    email : {
-        type : String
+    image : {
+        
     }
 
 })
 
-export const User = mongoose.model("User" , UserSchema)
+export const UserImage = mongoose.model("UserImage" , UserSchema)

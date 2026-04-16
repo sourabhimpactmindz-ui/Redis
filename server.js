@@ -1,4 +1,5 @@
 import app from './app.js'
+import 'dotenv/config'
 import { dbconn } from './config/db.config.js'
 
 const PORT = process.env.PORT || 4000

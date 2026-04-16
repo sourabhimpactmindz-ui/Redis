@@ -2,23 +2,18 @@ import { redisClient } from "../config/redis.js";
 import { User } from "../model/user.model.js";
 import { productQueue } from "../queue/adduser.js";
 
-export const CF = async(req,res) => {
+export const CreateUser = async(req,res) => {
     const { name , age ,  city} = req.body
     try{
 
-        const exitsuser = await User.findOne({name})
-
-        if(exitsuser){
-            return res.status(400).json({message : "User already exits" , status : false})
-        }
-
-        await productQueue.create({
+     
+      const addData =   await productQueue.add("add_user_job",{
             name,
             age,
             city
         })
 
-        return res.status(200).json({message : "User created succesfully" , data : user , status : true})
+        return res.status(200).json({message : "User created succesfully"  , user : addData.data ,  status : true})
 
     }catch(err){
         return res.status(500).json({message : err.message , status : false})

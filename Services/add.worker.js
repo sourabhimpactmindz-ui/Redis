@@ -1,7 +1,9 @@
 import { Worker } from "bullmq";
 import { redisClient } from "../config/redis.js";
-import User from "../model/user.model.js";
+import {User} from "../model/user.model.js";
+import { dbconn } from "../config/db.config.js";
 
+await dbconn();
 const worker = new Worker(
   "add_user",
   async (job) => {
@@ -9,8 +11,6 @@ const worker = new Worker(
       const data = job.data;
 
       const user = await User.create({ ...data });
-
-      console.log("✅ User created:", user);
 
     } catch (error) {
       console.log("❌ Error in worker:", error);
