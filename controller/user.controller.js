@@ -1,28 +1,29 @@
 import { redisClient } from "../config/redis.js";
 import { User } from "../model/user.model.js";
+import { productQueue } from "../queue/adduser.js";
 
-// export const CreateUser = async(req,res) => {
-//     const { name , age ,  city} = req.body
-//     try{
+export const CF = async(req,res) => {
+    const { name , age ,  city} = req.body
+    try{
 
-//         const exitsuser = await User.findOne({name})
+        const exitsuser = await User.findOne({name})
 
-//         if(exitsuser){
-//             return res.status(400).json({message : "User already exits" , status : false})
-//         }
+        if(exitsuser){
+            return res.status(400).json({message : "User already exits" , status : false})
+        }
 
-//         const user = await User.create({
-//             name,
-//             age,
-//             city
-//         })
+        await productQueue.create({
+            name,
+            age,
+            city
+        })
 
-//         return res.status(200).json({message : "User created succesfully" , data : user , status : true})
+        return res.status(200).json({message : "User created succesfully" , data : user , status : true})
 
-//     }catch(err){
-//         return res.status(500).json({message : err.message , status : false})
-//     }
-// }
+    }catch(err){
+        return res.status(500).json({message : err.message , status : false})
+    }
+}
 
 // cache Aside
 
@@ -118,40 +119,40 @@ export const UserFind = async (req, res) => {
 
 
 // Write behind
-export const CreateUser = async (req, res) => {
-  const { name, age, city } = req.body;
-  try {
-    const cachekey = "all_users";
+// export const CreateUser = async (req, res) => {
+//   const { name, age, city } = req.body;
+//   try {
+//     const cachekey = "all_users";
     
-    const existing = await redisClient.get(cachekey);
+//     const existing = await redisClient.get(cachekey);
 
-    let users = [];
+//     let users = [];
 
-    if (existing) {
-      users = JSON.parse(existing);
-    }
+//     if (existing) {
+//       users = JSON.parse(existing);
+//     }
 
-    const newuser = { name, age, city };
+//     const newuser = { name, age, city };
 
-    users.push(newuser);
+//     users.push(newuser);
 
-    await redisClient.set(cachekey, JSON.stringify(users));
+//     await redisClient.set(cachekey, JSON.stringify(users));
 
-    res.status(200).json({
-      message: "user added (cached updated instantly",
-      status: true,
-      data: newuser,
-    });
+//     res.status(200).json({
+//       message: "user added (cached updated instantly",
+//       status: true,
+//       data: newuser,
+//     });
 
-    setTimeout(async () => {
-      try {
-        await User.create(newuser);
-        console.log("DB updated (write-behind)");
-      } catch (err) {
-        console.log("DB error:", err.message);
-      }
-    }, 20000);
-  } catch (err) {
-    return res.status(500).json({ message: err.message, status: false });
-  }
-};
+//     setTimeout(async () => {
+//       try {
+//         await User.create(newuser);
+//         console.log("DB updated (write-behind)");
+//       } catch (err) {
+//         console.log("DB error:", err.message);
+//       }
+//     }, 20000);
+//   } catch (err) {
+//     return res.status(500).json({ message: err.message, status: false });
+//   }
+// };
